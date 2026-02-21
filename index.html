@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Jogo da Velha Underground PRO</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div class="container">
+    <h1 class="titulo">JOGO DA VELHA</h1>
+
+```
+<div class="controle">
+  <label>Nível:</label>
+  <select id="nivel">
+    <option value="base">Base (3x3)</option>
+    <option value="pro">Pro (4x4)</option>
+  </select>
+</div>
+
+<p class="status" id="status">Sua vez (X)</p>
+
+<div class="tabuleiro" id="tabuleiro"></div>
+
+<button class="btn-reset" id="resetar">Nova partida</button>
+```
+
+  </div>
+
+  <script>
+    const tabuleiroEl = document.getElementById("tabuleiro");
+    const statusEl = document.getElementById("status");
+    const btnReset = document.getElementById("resetar");
+    const seletorNivel = document.getElementById("nivel");
+
+    let tabuleiro = [];
+    let jogoAtivo = true;
+    let tamanho = 3;
+    let precisa = 3;
+
+    /* ========================= */
+    /* CONFIGURAÇÃO POR NÍVEL */
+    /* ========================= */
+
+    function configurarNivel() {
+      if (seletorNivel.value === "pro") {
+        tamanho = 4;
+        precisa = 4;
+      } else {
+        tamanho = 3;
+        precisa = 3;
+      }
+
+      iniciarJogo();
+    }
+
+    /* ========================= */
+    /* CRIAR TABULEIRO */
+    /* ========================= */
+
+    function iniciarJogo() {
+      tabuleiro = Array(tamanho * tamanho).fill("");
+      jogoAtivo = true;
+      statusEl.textContent = "Sua vez (X)";
+
+      tabuleiroEl.style.gridTemplateColumns = `repeat(${tamanho}, 1fr)`;
+      tabuleiroEl.innerHTML = "";
+
+      tabuleiro.forEach((_, index) => {
+        const casa = document.createElement("div");
+        casa.className = "casa";
+        casa.dataset.index = index;
+        casa.addEventListener("click", jogadaJogador);
+        tabuleiroEl.appendChild(casa);
+      });
+    }
+
+    /* ========================= */
+    /* JOGADA JOGADOR */
+    /* ========================= */
+
+    function jogadaJogador(e) {
+      const index = Number(e.target.dataset.index);
+
+      if (!jogoAtivo || tabuleiro[index] !== "") return;
+
+      fazerJogada(index, "X");
+
+      if (jogoAtivo) {
+        setTimeout(jogadaBot, 500);
+      }
+    }
+
+    function fazerJogada(index, jogador) {
+      tabuleiro[index] = jogador;
+      const casa = tabuleiroEl.children[index];
+      casa.textContent = jogador;
+      casa.classList.add(jogador === "X" ? "x" : "o");
+
+      verificarFim(jogador);
+    }
+
+    /* ========================= */
+    /* BOT INTELIGENTE */
+    /* ========================= */
+
+    function jogadaBot() {
+      let jogada = encontrarMelhorJogada("O");
+
+      if (jogada === null) {
+        jogada = encontrarMelhorJogada("X");
+      }
+
+      if (jogada === null) {
+        const vazias = tabuleiro
+          .map((v, i) => v === "" ? i : null)
+          .filter(v => v !== null);
+
+        if (!vazias.length) return;
+
+        jogada = vazias[Math.floor(Math.random() * vazias.length)];
+      }
+
+      fazerJogada(jogada, "O");
+    }
+
+    /* ========================= */
+    /* ENCONTRAR JOGADA */
+    /* ========================= */
+
+    function encontrarMelhorJogada(jogador) {
+      const linhas = gerarLinhasVitoria();
+
+      for (const linha of linhas) {
+        const valores = linha.map(i => tabuleiro[i]);
+
+        const countJogador = valores.filter(v => v === jogador).length;
+        const countVazio = valores.filter(v => v === "").length;
+
+        if (countJogador === precisa - 1 && countVazio === 1) {
+          return linha[valores.indexOf("")];
+        }
+      }
+
+      return null;
+    }
+
+    /* ========================= */
+    /* GERAR LINHAS DINÂMICAS */
+    /* ========================= */
+
+    function gerarLinhasVitoria() {
+      const linhas = [];
+
+      // horizontais
+      for (let r = 0; r < tamanho; r++) {
+        for (let c = 0; c <= tamanho - precisa; c++) {
+          const linha = [];
+          for (let i = 0; i < precisa; i++) {
+            linha.push(r * tamanho + c + i);
+          }
+          linhas.push(linha);
+        }
+      }
+
+      // verticais
+      for (let c = 0; c < tamanho; c++) {
+        for (let r = 0; r <= tamanho - precisa; r++) {
+          const linha = [];
+          for (let i = 0; i < precisa; i++) {
+            linha.push((r + i) * tamanho + c);
+          }
+          linhas.push(linha);
+        }
+      }
+
+      // diagonal \
+      for (let r = 0; r <= tamanho - precisa; r++) {
+        for (let c = 0; c <= tamanho - precisa; c++) {
+          const linha = [];
+          for (let i = 0; i < precisa; i++) {
+            linha.push((r + i) * tamanho + (c + i));
+          }
+          linhas.push(linha);
+        }
+      }
+
+      // diagonal /
+      for (let r = 0; r <= tamanho - precisa; r++) {
+        for (let c = precisa - 1; c < tamanho; c++) {
+          const linha = [];
+          for (let i = 0; i < precisa; i++) {
+            linha.push((r + i) * tamanho + (c - i));
+          }
+          linhas.push(linha);
+        }
+      }
+
+      return linhas;
+    }
+
+    /* ========================= */
+    /* VERIFICAR FIM (COM ANIMAÇÃO) */
+    /* ========================= */
+
+    function verificarFim(jogador) {
+      const linhas = gerarLinhasVitoria();
+
+      let linhaVencedora = null;
+
+      const venceu = linhas.some(linha => {
+        const ganhou = linha.every(i => tabuleiro[i] === jogador);
+        if (ganhou) linhaVencedora = linha;
+        return ganhou;
+      });
+
+      if (venceu) {
+        statusEl.textContent = jogador === "X"
+          ? "Você venceu! 🔥"
+          : "Bot venceu 😈";
+
+        jogoAtivo = false;
+
+        if (linhaVencedora) {
+          linhaVencedora.forEach(i => {
+            tabuleiroEl.children[i].classList.add("vencedora");
+          });
+        }
+
+        return;
+      }
+
+      if (!tabuleiro.includes("")) {
+        statusEl.textContent = "Empate 🤝";
+        jogoAtivo = false;
+      }
+    }
+
+    /* ========================= */
+    /* EVENTOS */
+    /* ========================= */
+
+    btnReset.addEventListener("click", iniciarJogo);
+    seletorNivel.addEventListener("change", configurarNivel);
+
+    iniciarJogo();
+  </script>
+
+</body>
+</html>

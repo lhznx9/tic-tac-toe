@@ -1,0 +1,137 @@
+body {
+margin: 0;
+height: 100vh;
+background: radial-gradient(circle at center, #0a0a0a, #000);
+font-family: Arial, Helvetica, sans-serif;
+display: flex;
+justify-content: center;
+align-items: center;
+color: white;
+}
+
+.container {
+text-align: center;
+}
+
+.titulo {
+font-size: 42px;
+letter-spacing: 4px;
+color: #ffd700;
+text-shadow:
+0 0 10px #ffd700,
+0 0 25px rgba(255,0,0,0.6);
+}
+
+.status {
+margin-bottom: 20px;
+font-size: 18px;
+color: #ff4444;
+}
+
+.tabuleiro {
+width: 300px;
+height: 300px;
+margin: 0 auto 20px;
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 8px;
+}
+
+.casa {
+background: #111;
+border: 2px solid #ffd700;
+display: flex;
+justify-content: center;
+align-items: center;
+font-size: 48px;
+cursor: pointer;
+transition: all 0.15s ease;
+}
+
+.casa:hover {
+background: #1a1a1a;
+transform: scale(1.05);
+}
+
+.casa.x {
+color: #ffd700;
+text-shadow: 0 0 10px #ffd700;
+}
+
+.casa.o {
+color: #ff4444;
+text-shadow: 0 0 10px #ff0000;
+}
+
+.btn-reset {
+padding: 10px 22px;
+background: linear-gradient(135deg, #ffd700, #ff9900);
+border: none;
+border-radius: 10px;
+font-weight: bold;
+cursor: pointer;
+box-shadow: 0 0 12px rgba(255,215,0,0.6);
+}
+
+.btn-reset:hover {
+transform: scale(1.05);
+}
+/* ========================= */
+/* ===== ANIMAÇÕES ===== */
+/* ========================= */
+
+.tabuleiro {
+  box-shadow:
+    0 0 25px rgba(255, 215, 0, 0.25),
+    inset 0 0 20px rgba(0,0,0,0.6);
+  border-radius: 12px;
+  padding: 10px;
+}
+
+/* hover mais vivo */
+.casa {
+  position: relative;
+  overflow: hidden;
+}
+
+.casa::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, rgba(255,215,0,0.25), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.casa:hover::after {
+  opacity: 1;
+}
+
+/* animação quando marca */
+@keyframes popIn {
+  0% {
+    transform: scale(0.3) rotate(-20deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.15) rotate(6deg);
+  }
+  100% {
+    transform: scale(1) rotate(0);
+    opacity: 1;
+  }
+}
+
+.casa.x,
+.casa.o {
+  animation: popIn 0.25s ease;
+}
+
+/* linha vencedora */
+.casa.vencedora {
+  background: linear-gradient(135deg, #ffd700, #ff9900);
+  color: #000 !important;
+  box-shadow:
+    0 0 20px #ffd700,
+    0 0 40px rgba(255,215,0,0.7);
+}
