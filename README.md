@@ -8,7 +8,7 @@ Projeto simples de jogo da velha feito com:
 
 ##  Como jogar
 
-Abra o arquivo index.html no navegador.
+Acesse https://lhznx9.github.io/tic-tac-toe/
 
 ##  Autor
 
